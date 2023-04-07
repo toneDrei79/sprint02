@@ -42,7 +42,7 @@ __global__ void equitocube(const cv::cuda::PtrStep<uchar3> src, cv::cuda::PtrSte
 {   
     /*
         +----+----+----+
-        | Y+ | X+ | Y- |
+        | Y- | X+ | Y+ |
         +----+----+----+
         | X- | Z- | Z+ |
         +----+----+----+
@@ -109,32 +109,33 @@ __global__ void equitocube(const cv::cuda::PtrStep<uchar3> src, cv::cuda::PtrSte
             l_coord.x = g_coord.x - sqr;
             l_coord.y = g_coord.y - sqr;
 
-            coord.x = l_coord.y - 0.5*sqr;
+            coord.x = -(l_coord.y - 0.5*sqr);
             coord.y = l_coord.x - 0.5*sqr;
-            coord.z = -0.5 * sqr;
+            coord.z = 0.5 * sqr;
         }
         else // right [Z+]
         {
             l_coord.x = g_coord.x - 2*sqr;
             l_coord.y = g_coord.y - sqr;
 
-            coord.x = -(l_coord.y - 0.5*sqr);
+            coord.x = l_coord.y - 0.5*sqr;
             coord.y = l_coord.x - 0.5*sqr;
-            coord.z = 0.5 * sqr;
+            coord.z = -0.5 * sqr;
         }
     }
 
     // polar angles
     float rho = get_rho(coord.x, coord.y, coord.z);
-    float theta = get_theta(coord.x, coord.y) / (2*PI); // normalized angle 0.~1.
-    float phi = get_phi(coord.z, rho) / PI; // normalized angle 0.~1.
+    float theta = 1. - get_theta(coord.x, coord.y)/(2*PI); // normalized angle 0.~1.
+    // float theta = get_theta(coord.x, coord.y)/(2*PI); // normalized angle 0.~1.
+    float phi = get_phi(coord.z, rho)/PI; // normalized angle 0.~1.
 
     // printf("%f, %f, %f\n", rho, theta, phi);
 
     // reference coordinates
     int2 src_coord = {
         cols * theta,
-        rows * phi 
+        rows * phi
     };
 
     // catch possible overflow
